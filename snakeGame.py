@@ -35,6 +35,19 @@ foodSpawn = True
 direction = 'RIGHT'
 changeto = direction
 
+score = 0
+
+# scoreboard
+def showScore(choice = 1):
+	sFont = pygame.font.SysFont('monaco', 24)
+	sSurface = sFont.render('Score: {0}'.format(score), True, black)
+	sRect = sSurface.get_rect()
+	if choice == 1:
+		sRect.midtop = (80, 10)
+	else:
+		sRect.midtop = (360, 120)
+	playSurface.blit(sSurface, sRect)
+
 # Game over function
 def gameOver():
 	myFont = pygame.font.SysFont('monaco', 72)
@@ -42,8 +55,8 @@ def gameOver():
 	goRect = goSurface.get_rect()
 	goRect.midtop = (360, 10) # (x, y)
 	playSurface.blit(goSurface, goRect)
+	showScore(0)
 	pygame.display.flip()
-
 	time.sleep(5)
 	pygame.quit() # for pygame
 	sys.exit() # for console
@@ -67,7 +80,7 @@ while True:
 			if event.key == pygame.K_DOWN or event.key == ord('s'):
 				changeto = 'DOWN'
 			if event.key == pygame.K_ESCAPE:
-				pygame.event.post(pygame.event.Event(QUIT)) # create event
+				pygame.event.post(pygame.event.Event(pygame.QUIT)) # create event
 
 	# validation of direction (can't change direction in the opposite)
 	if changeto == 'RIGHT' and not direction == 'LEFT':
@@ -92,6 +105,7 @@ while True:
 	# Snake body mechanism
 	snakeBody.insert(0, list(snakePos))
 	if snakePos[0] == foodPos[0] and snakePos[1] == foodPos[1]:
+		score += 1
 		foodSpawn = False  #temporarily
 	else:
 		snakeBody.pop()
@@ -101,14 +115,26 @@ while True:
 	foodSpawn = True
 
 	playSurface.fill(white)
-
+	# draw snake
 	for pos in snakeBody:
 		pygame.draw.rect(playSurface, green, pygame.Rect(pos[0], pos[1], 10, 10))
 
+	# draw food
 	pygame.draw.rect(playSurface, brown, pygame.Rect(foodPos[0], foodPos[1], 10, 10))
 
-	
+	# check boundaries
+	if snakePos[0] > 710 or snakePos[0] < 0:
+		gameOver()
 
+	if snakePos[1] > 450 or snakePos[1] < 0:
+		gameOver()
+
+	# check if snake touched itself
+	for block in snakeBody[1:]:
+		if snakePos[0] == block[0] and snakePos[1] == block[1]:
+			gameOver()
+
+	showScore()
 	pygame.display.flip()
 	fpsController.tick(20)
 
